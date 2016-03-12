@@ -5,27 +5,26 @@
 #include <string>
 #include <map>
 #include "../Type.hpp"
-using namespace std;
 
 class LSClass : public LSValue {
 public:
 
 	LSClass* parent;
-	string name;
-	map<string, LSValue*> methods;
-	map<string, LSValue*> static_fields;
+	std::string name;
+	std::map<std::string, LSValue*> methods;
+	std::map<std::string, LSValue*> static_fields;
 
 	static LSValue* class_class;
 
 	LSClass();
-	LSClass(string);
+	LSClass(std::string);
 	LSClass(JsonValue&);
 
 	virtual ~LSClass();
 
-	void addMethod(string, LSValue*);
-	void addStaticField(string, LSValue*);
-	LSValue* getMethod(string);
+	void addMethod(std::string, LSValue*);
+	void addStaticField(std::string, LSValue*);
+	LSValue* getMethod(std::string);
 
 	bool isTrue() const override;
 
@@ -179,6 +178,38 @@ public:
 	bool operator < (const LSObject*) const override;
 	bool operator < (const LSClass*) const override;
 
+	bool operator > (const LSValue*) const override;
+	bool operator > (const LSNull*) const override;
+	bool operator > (const LSBoolean*) const override;
+	bool operator > (const LSNumber*) const override;
+	bool operator > (const LSString*) const override;
+	bool operator > (const LSArray*) const override;
+	bool operator > (const LSFunction*) const override;
+	bool operator > (const LSObject*) const override;
+	bool operator > (const LSClass*) const override;
+
+	bool operator <= (const LSValue*) const override;
+	bool operator <= (const LSNull*) const override;
+	bool operator <= (const LSBoolean*) const override;
+	bool operator <= (const LSNumber*) const override;
+	bool operator <= (const LSString*) const override;
+	bool operator <= (const LSArray*) const override;
+	bool operator <= (const LSFunction*) const override;
+	bool operator <= (const LSObject*) const override;
+	bool operator <= (const LSClass*) const override;
+
+	bool operator >= (const LSValue*) const override;
+	bool operator >= (const LSNull*) const override;
+	bool operator >= (const LSBoolean*) const override;
+	bool operator >= (const LSNumber*) const override;
+	bool operator >= (const LSString*) const override;
+	bool operator >= (const LSArray*) const override;
+	bool operator >= (const LSFunction*) const override;
+	bool operator >= (const LSObject*) const override;
+	bool operator >= (const LSClass*) const override;
+
+	bool in(const LSValue*) const override;
+
 	LSValue* at (const LSValue* value) const override;
 	LSValue** atL (const LSValue* value) override;
 
@@ -193,7 +224,7 @@ public:
 	LSValue* clone() const;
 
 	std::ostream& print(std::ostream& os) const;
-	string json() const override;
+	std::string json() const override;
 
 	LSValue* getClass() const override;
 

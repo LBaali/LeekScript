@@ -3,6 +3,8 @@
 #include "LSString.hpp"
 #include "LSNumber.hpp"
 
+using namespace std;
+
 LSValue* LSObject::object_class(new LSClass("Object"));
 
 LSObject::LSObject() {
@@ -458,10 +460,94 @@ bool LSObject::operator < (const LSClass* v) const {
 	return true;
 }
 
-LSValue* LSObject::at (const LSValue* value) const {
+bool LSObject::operator > (const LSValue* value) const {
+	return value->operator > (this);
+}
+bool LSObject::operator > (const LSNull*) const {
+	return true;
+}
+bool LSObject::operator > (const LSBoolean*) const {
+	return true;
+}
+bool LSObject::operator > (const LSNumber*) const {
+	return true;
+}
+bool LSObject::operator > (const LSString*) const {
+	return true;
+}
+bool LSObject::operator > (const LSArray* v) const {
+	return true;
+}
+bool LSObject::operator > (const LSObject* v) const {
+	return values.size() > v->values.size();
+}
+bool LSObject::operator > (const LSFunction*) const {
+	return false;
+}
+bool LSObject::operator > (const LSClass*) const {
+	return false;
+}
+
+bool LSObject::operator <= (const LSValue* value) const {
+	return value->operator <= (this);
+}
+bool LSObject::operator <= (const LSNull*) const {
+	return false;
+}
+bool LSObject::operator <= (const LSBoolean*) const {
+	return false;
+}
+bool LSObject::operator <= (const LSNumber*) const {
+	return false;
+}
+bool LSObject::operator <= (const LSString*) const {
+	return false;
+}
+bool LSObject::operator <= (const LSArray*) const {
+	return false;
+}
+bool LSObject::operator <= (const LSObject* v) const {
+	return values.size() <= v->values.size();
+}
+bool LSObject::operator <= (const LSFunction*) const {
+	return true;
+}
+bool LSObject::operator <= (const LSClass*) const {
+	return true;
+}
+
+bool LSObject::operator >= (const LSValue* value) const {
+	return value->operator >= (this);
+}
+bool LSObject::operator >= (const LSNull*) const {
+	return true;
+}
+bool LSObject::operator >= (const LSBoolean*) const {
+	return true;
+}
+bool LSObject::operator >= (const LSNumber*) const {
+	return true;
+}
+bool LSObject::operator >= (const LSString*) const {
+	return true;
+}
+bool LSObject::operator >= (const LSArray*) const {
+	return true;
+}
+bool LSObject::operator >= (const LSObject* v) const {
+	return values.size() >= v->values.size();
+}
+bool LSObject::operator >= (const LSFunction*) const {
+	return false;
+}
+bool LSObject::operator >= (const LSClass*) const {
+	return false;
+}
+
+LSValue* LSObject::at (const LSValue*) const {
 	return LSNull::null_var;
 }
-LSValue** LSObject::atL (const LSValue* value) {
+LSValue** LSObject::atL (const LSValue*) {
 	return &LSNull::null_var;
 }
 
@@ -470,6 +556,15 @@ LSValue* LSObject::range(const LSValue* start, const LSValue* end) const {
 }
 LSValue* LSObject::rangeL(const LSValue* start, const LSValue* end) {
 	return this;
+}
+
+bool LSObject::in(const LSValue* v) const {
+	for (auto i = values.begin(); i != values.end(); i++) {
+		if (i->second->operator == (v)) {
+			return true;
+		}
+	}
+	return false;
 }
 
 LSValue* LSObject::attr(const LSValue* key) const {

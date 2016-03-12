@@ -7,7 +7,6 @@
 #include "LSClass.hpp"
 #include "../../lib/gason.h"
 #include "../Type.hpp"
-using namespace std;
 
 #define NUMBER_TYPE double
 #define USE_CACHE 0
@@ -17,11 +16,11 @@ using namespace std;
 class LSNumber : public LSValue {
 public:
 
-	#if USE_CACHE
-		const NUMBER_TYPE value;
-	#else
-		NUMBER_TYPE value;
-	#endif
+#if USE_CACHE
+	const NUMBER_TYPE value;
+#else
+	NUMBER_TYPE value;
+#endif
 
 	static LSClass* number_class;
 	static LSNumber* cache[CACHE_HIGH - CACHE_LOW + 1];
@@ -186,6 +185,38 @@ public:
 	bool operator < (const LSObject*) const override;
 	bool operator < (const LSClass*) const override;
 
+	bool operator > (const LSValue*) const override;
+	bool operator > (const LSNull*) const override;
+	bool operator > (const LSBoolean*) const override;
+	bool operator > (const LSNumber*) const override;
+	bool operator > (const LSString*) const override;
+	bool operator > (const LSArray*) const override;
+	bool operator > (const LSFunction*) const override;
+	bool operator > (const LSObject*) const override;
+	bool operator > (const LSClass*) const override;
+
+	bool operator <= (const LSValue*) const override;
+	bool operator <= (const LSNull*) const override;
+	bool operator <= (const LSBoolean*) const override;
+	bool operator <= (const LSNumber*) const override;
+	bool operator <= (const LSString*) const override;
+	bool operator <= (const LSArray*) const override;
+	bool operator <= (const LSFunction*) const override;
+	bool operator <= (const LSObject*) const override;
+	bool operator <= (const LSClass*) const override;
+
+	bool operator >= (const LSValue*) const override;
+	bool operator >= (const LSNull*) const override;
+	bool operator >= (const LSBoolean*) const override;
+	bool operator >= (const LSNumber*) const override;
+	bool operator >= (const LSString*) const override;
+	bool operator >= (const LSArray*) const override;
+	bool operator >= (const LSFunction*) const override;
+	bool operator >= (const LSObject*) const override;
+	bool operator >= (const LSClass*) const override;
+
+	bool in(const LSValue*) const override;
+
 	LSValue* at (const LSValue* value) const override;
 	LSValue** atL (const LSValue* value) override;
 
@@ -200,8 +231,8 @@ public:
 	LSValue* clone() const override;
 
 	std::ostream& print(std::ostream& os) const override;
-	string json() const override;
-	string toString() const;
+	std::string json() const override;
+	std::string toString() const;
 
 	LSValue* getClass() const override;
 

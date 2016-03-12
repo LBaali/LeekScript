@@ -6,7 +6,6 @@
 #include "../LSValue.hpp"
 #include "../../lib/gason.h"
 #include "../Type.hpp"
-using namespace std;
 
 class LSString : public LSValue {
 public:
@@ -18,7 +17,7 @@ public:
 	LSString();
 	LSString(char);
 	LSString(const char*);
-	LSString(string);
+	LSString(std::string);
 	LSString(JsonValue&);
 
 	~LSString();
@@ -175,6 +174,38 @@ public:
 	bool operator < (const LSObject*) const override;
 	bool operator < (const LSClass*) const override;
 
+	bool operator > (const LSValue*) const override;
+	bool operator > (const LSNull*) const override;
+	bool operator > (const LSBoolean*) const override;
+	bool operator > (const LSNumber*) const override;
+	bool operator > (const LSString*) const override;
+	bool operator > (const LSArray*) const override;
+	bool operator > (const LSFunction*) const override;
+	bool operator > (const LSObject*) const override;
+	bool operator > (const LSClass*) const override;
+
+	bool operator <= (const LSValue*) const override;
+	bool operator <= (const LSNull*) const override;
+	bool operator <= (const LSBoolean*) const override;
+	bool operator <= (const LSNumber*) const override;
+	bool operator <= (const LSString*) const override;
+	bool operator <= (const LSArray*) const override;
+	bool operator <= (const LSFunction*) const override;
+	bool operator <= (const LSObject*) const override;
+	bool operator <= (const LSClass*) const override;
+
+	bool operator >= (const LSValue*) const override;
+	bool operator >= (const LSNull*) const override;
+	bool operator >= (const LSBoolean*) const override;
+	bool operator >= (const LSNumber*) const override;
+	bool operator >= (const LSString*) const override;
+	bool operator >= (const LSArray*) const override;
+	bool operator >= (const LSFunction*) const override;
+	bool operator >= (const LSObject*) const override;
+	bool operator >= (const LSClass*) const override;
+
+	bool in(const LSValue*) const override;
+
 	LSValue* at (const LSValue* value) const override;
 	LSValue** atL (const LSValue* value) override;
 
@@ -189,7 +220,7 @@ public:
 	LSValue* clone() const override;
 
 	std::ostream& print(std::ostream& os) const;
-	string json() const override;
+	std::string json() const override;
 
 	LSValue* getClass() const override;
 

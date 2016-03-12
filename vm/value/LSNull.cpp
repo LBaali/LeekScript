@@ -2,6 +2,8 @@
 #include "LSClass.hpp"
 #include "LSNumber.hpp"
 
+using namespace std;
+
 LSValue* LSNull::null_var = new LSNull();
 LSClass* LSNull::null_class = new LSClass("Null");
 
@@ -424,6 +426,94 @@ bool LSNull::operator < (const LSObject* v) const {
 	return true;
 }
 bool LSNull::operator < (const LSClass* v) const {
+	return true;
+}
+
+bool LSNull::operator > (const LSValue* v) const {
+	return v->operator > (this);
+}
+bool LSNull::operator > (const LSNull* v) const {
+	return false;
+}
+bool LSNull::operator > (const LSBoolean* v) const {
+	return false;
+}
+bool LSNull::operator > (const LSNumber* v) const {
+	return false;
+}
+bool LSNull::operator > (const LSString* v) const {
+	return false;
+}
+bool LSNull::operator > (const LSArray* v) const {
+	return false;
+}
+bool LSNull::operator > (const LSFunction* v) const {
+	return false;
+}
+bool LSNull::operator > (const LSObject* v) const {
+	return false;
+}
+bool LSNull::operator > (const LSClass* v) const {
+	return false;
+}
+
+bool LSNull::operator <= (const LSValue* v) const {
+	return v->operator <= (this);
+}
+bool LSNull::operator <= (const LSNull* v) const {
+	return true;
+}
+bool LSNull::operator <= (const LSBoolean* v) const {
+	return true;
+}
+bool LSNull::operator <= (const LSNumber* v) const {
+	return true;
+}
+bool LSNull::operator <= (const LSString* v) const {
+	return true;
+}
+bool LSNull::operator <= (const LSArray* v) const {
+	return true;
+}
+bool LSNull::operator <= (const LSFunction* v) const {
+	return true;
+}
+bool LSNull::operator <= (const LSObject* v) const {
+	return true;
+}
+bool LSNull::operator <= (const LSClass* v) const {
+	return true;
+}
+
+bool LSNull::operator >= (const LSValue* v) const {
+	return v->operator >= (this);
+}
+bool LSNull::operator >= (const LSNull* v) const {
+	return true;
+}
+bool LSNull::operator >= (const LSBoolean* v) const {
+	return false;
+}
+bool LSNull::operator >= (const LSNumber* v) const {
+	return false;
+}
+bool LSNull::operator >= (const LSString* v) const {
+	return false;
+}
+bool LSNull::operator >= (const LSArray* v) const {
+	return false;
+}
+bool LSNull::operator >= (const LSFunction* v) const {
+	return false;
+}
+bool LSNull::operator >= (const LSObject* v) const {
+	return false;
+}
+bool LSNull::operator >= (const LSClass* v) const {
+	return false;
+}
+
+bool LSNull::in(const LSValue* v) const {
 	return false;
 }
 

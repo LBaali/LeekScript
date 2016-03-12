@@ -183,8 +183,17 @@ LSValue* jit_equals(LSValue* x, LSValue* y) {
 LSValue* jit_not_equals(LSValue* x, LSValue* y) {
 	return LSBoolean::get(x->operator != (y));
 }
-LSValue* jit_low(LSValue* x, LSValue* y) {
+LSValue* jit_lt(LSValue* x, LSValue* y) {
 	return LSBoolean::get(y->operator < (x));
+}
+LSValue* jit_le(LSValue* x, LSValue* y) {
+	return LSBoolean::get(y->operator <= (x));
+}
+LSValue* jit_gt(LSValue* x, LSValue* y) {
+	return LSBoolean::get(y->operator > (x));
+}
+LSValue* jit_ge(LSValue* x, LSValue* y) {
+	return LSBoolean::get(y->operator >= (x));
 }
 
 LSValue* jit_store(LSValue** x, LSValue* y) {
@@ -244,6 +253,10 @@ LSArray* jit_tilde_tilde_pointer(LSArray* array, LSFunction* fun) {
 	return new_array;
 }
 
+LSValue* jit_in(LSValue* x, LSValue* y) {
+	return LSBoolean::get(y->in(x));
+}
+
 jit_value_t Expression::compile_jit(Compiler& c, jit_function_t& F, Type req_type) const {
 
 	if (op == nullptr) {
@@ -286,10 +299,6 @@ jit_value_t Expression::compile_jit(Compiler& c, jit_function_t& F, Type req_typ
 				jit_insn_store(F, x, y);
 				return y;
 			}
-				/*
-
-			}
-			*/
 			break;
 		}
 		case TokenType::SWAP: {
@@ -447,8 +456,9 @@ jit_value_t Expression::compile_jit(Compiler& c, jit_function_t& F, Type req_typ
 			break;
 		}
 		case TokenType::POWER: {
-			if (req_type.nature == Nature::POINTER)
+			if (req_type.nature == Nature::POINTER) {
 				use_jit_func = false;
+			}
 			jit_func = &jit_insn_pow;
 			ls_func = (void*) &jit_pow;
 			break;
@@ -467,19 +477,25 @@ jit_value_t Expression::compile_jit(Compiler& c, jit_function_t& F, Type req_typ
 		}
 		case TokenType::LOWER: {
 			jit_func = &jit_insn_lt;
-			ls_func = (void*) &jit_low;
+			ls_func = (void*) &jit_lt;
 			conv_info = Type::BOOLEAN;
 			break;
 		}
 		case TokenType::LOWER_EQUALS: {
 			jit_func = &jit_insn_le;
-			ls_func = (void*) &jit_low;
+			ls_func = (void*) &jit_le;
 			conv_info = Type::BOOLEAN;
 			break;
 		}
 		case TokenType::GREATER: {
 			jit_func = &jit_insn_gt;
-			ls_func = (void*) &jit_low;
+			ls_func = (void*) &jit_gt;
+			conv_info = Type::BOOLEAN;
+			break;
+		}
+		case TokenType::GREATER_EQUALS: {
+			jit_func = &jit_insn_ge;
+			ls_func = (void*) &jit_ge;
 			conv_info = Type::BOOLEAN;
 			break;
 		}
@@ -490,6 +506,11 @@ jit_value_t Expression::compile_jit(Compiler& c, jit_function_t& F, Type req_typ
 				ls_func = (void*) &jit_tilde_tilde_pointer;
 			}
 			v2_conv = Type(RawType::FUNCTION, Nature::POINTER);
+			break;
+		}
+		case TokenType::IN: {
+			use_jit_func = false;
+			ls_func = (void*) &jit_in;
 			break;
 		}
 		default: {
@@ -506,14 +527,14 @@ jit_value_t Expression::compile_jit(Compiler& c, jit_function_t& F, Type req_typ
 			jit_insn_and(F, x, jit_value_create_nint_constant(F, jit_type_int, 2147483648)),
 			jit_value_create_nint_constant(F, jit_type_int, 0)
 		);*/
-
+/*
 		jit_value_t is_int = jit_insn_eq(F,
 			x,
 			jit_value_create_nint_constant(F, jit_type_int, -55)
 		);
 
 		jit_label_t label_end = jit_label_undefined;
-
+*/
 		jit_value_t r = jit_func(F, x, y);
 /*
 		jit_insn_branch_if_not(F, is_int, &label_end);
