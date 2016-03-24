@@ -38,17 +38,26 @@ ArraySTD::ArraySTD() : Module("Array") {
 	method("filter", Type::ARRAY, {Type::ARRAY, filter_fun_type},(void*)&array_filter);
 	method("contains",Type::BOOLEAN_P, {Type::ARRAY, Type::POINTER}, (void*)&array_contains);
 	method("isEmpty",Type::BOOLEAN_P, {Type::ARRAY}, (void*)&array_isEmpty);
-	method("partition",Type::ARRAY, {Type::ARRAY, map_fun_type}, (void*)&array_partition);
+
+	Type partition_fun_type = Type::FUNCTION_P;
+	partition_fun_type.setArgumentType(0, Type::POINTER);
+	partition_fun_type.setReturnType(Type::POINTER);
+	method("partition",Type::ARRAY, {Type::ARRAY, partition_fun_type}, (void*)&array_partition);
 	method("first", Type::POINTER, {Type::ARRAY}, (void*)&array_first);
 	method("last", Type::POINTER, {Type::ARRAY}, (void*)&array_last);
-	method("foldLeft", Type::POINTER, {Type::ARRAY, map2_fun_type, Type::POINTER}, (void*)&array_foldLeft);
-	method("foldRight", Type::POINTER, {Type::ARRAY, map2_fun_type, Type::POINTER}, (void*)&array_foldRight);
+
+	Type fold_fun_type = Type::FUNCTION_P;
+	fold_fun_type.setArgumentType(0, Type::POINTER);
+	fold_fun_type.setArgumentType(1, Type::POINTER);
+	fold_fun_type.setReturnType(Type::POINTER);
+	method("foldLeft", Type::POINTER, {Type::ARRAY, fold_fun_type, Type::POINTER}, (void*)&array_foldLeft);
+	method("foldRight", Type::POINTER, {Type::ARRAY, fold_fun_type, Type::POINTER}, (void*)&array_foldRight);
 	method("reverse", Type::ARRAY, {Type::ARRAY}, (void*)&array_reverse);
 	method("shuffle", Type::ARRAY, {Type::ARRAY}, (void*)&array_shuffle);
 	method("search", Type::POINTER, {Type::ARRAY, Type::POINTER, Type::POINTER}, (void*)&array_search);
 	method("subArray", Type::ARRAY, {Type::ARRAY, Type::POINTER, Type::POINTER}, (void*)&array_subArray);
 	method("pop", Type::POINTER, {Type::ARRAY}, (void*)&array_pop);
-	method("push", Type::ARRAY, {Type::ARRAY}, (void*)&array_push);
+	method("push", Type::ARRAY, {Type::ARRAY, Type::POINTER}, (void*)&array_push);
 	method("pushAll", Type::ARRAY, {Type::ARRAY, Type::ARRAY}, (void*)&array_pushAll);
 	method("concat", Type::ARRAY, {Type::ARRAY, Type::ARRAY}, (void*)&array_concat);
 	method("join", Type::STRING, {Type::ARRAY, Type::STRING}, (void*)&array_join);
@@ -92,54 +101,61 @@ LSArray* array_filter(const LSArray* array, const LSFunction* function) {
 	LSArray* new_array = new LSArray();
 	auto fun = (void* (*)(void*))function->function;
 	if (array->associative) {
-		for (auto v : array->values)
-			if (((LSValue *)fun(v.second))->isTrue()) new_array->pushKeyClone(v.first, v.second);
-
+		for (auto v : array->values) {
+			if (((LSValue*) fun(v.second))->isTrue()) new_array->pushKeyClone(v.first, v.second);
+		}
 	} else {
-		for (auto v : array->values)
-			if (((LSValue *)fun(v.second))->isTrue()) new_array->pushClone(v.second);
+		for (auto v : array->values) {
+			if (((LSValue*) fun(v.second))->isTrue()) new_array->pushClone(v.second);
+		}
 	}
 	return new_array;
 }
 
 LSValue* array_first(const LSArray* array) {
 	auto first = array->values.begin();
-	if (first == array->values.end())
+	if (first == array->values.end()) {
 		return LSNull::null_var;
+	}
 	return first->second->clone();
 }
 
-LSArray* array_flatten(const LSArray* array, const LSNumber* depth) {
+LSArray* array_flatten(const LSArray*, const LSNumber*) {
+	// TODO
 	return new LSArray();
 }
 
 LSValue* array_foldLeft(const LSArray* array, const LSFunction* function, LSValue* v0) {
-	auto fun = (LSValue* (*)(LSValue*,LSValue*))function->function;
+	auto fun = (LSValue* (*)(LSValue*, LSValue*)) function->function;
 	LSValue* result = v0;
-	for (auto v : array->values)
+	for (auto v : array->values) {
 		result = fun(result, v.second);
+	}
 	return result;
 }
 
 LSValue* array_foldRight(const LSArray* array, const LSFunction* function, LSValue* v0) {
-	auto fun = (LSValue* (*)(LSValue*,LSValue*))function->function;
+	auto fun = (LSValue* (*)(LSValue*, LSValue*)) function->function;
 	LSValue* result = v0;
-	for (auto it = array->values.rbegin(); it != array->values.rend(); it++)
+	for (auto it = array->values.rbegin(); it != array->values.rend(); it++) {
 		result = fun(it->second, result);
+	}
 	return result;
 }
 
 LSValue* array_iter(const LSArray* array, const LSFunction* function) {
 	auto fun = (void* (*)(void*))function->function;
-	for (auto v : array->values)
+	for (auto v : array->values) {
 		fun(v.second);
+	}
 	return LSNull::null_var;
 }
 
 LSValue* array_contains(const LSArray* array, const LSValue* value) {
 	for (auto v : array->values) {
-		if (value->operator ==(v.second))
+		if (value->operator == (v.second)) {
 			return LSBoolean::true_val;
+		}
 	}
 	return LSBoolean::false_val;
 }
@@ -173,7 +189,8 @@ LSValue* array_join(const LSArray* array, const LSString* glue) {
 	return result;
 }
 
-LSValue* array_keySort(const LSArray* array, const LSNumber* order) {
+LSValue* array_keySort(const LSArray*, const LSNumber*) {
+	// TODO
 	return new LSArray();
 }
 
@@ -318,14 +335,16 @@ LSValue* array_search(const LSArray* array, const LSValue* value, const LSValue*
 	return LSNull::null_var;
 }
 
-LSValue* array_shift(const LSArray* array) {
+LSValue* array_shift(const LSArray*) {
+	// TODO
 	return new LSArray();
 }
 
 LSArray* array_shuffle(const LSArray* array) {
 	LSArray* new_array = new LSArray();
-	if (array->values.empty())
+	if (array->values.empty()) {
 		return new_array;
+	}
 	vector<LSValue*> shuffled_values;
 	for (auto it = array->values.begin(); it != array->values.end(); it++) {
 		shuffled_values.push_back(it->second);
@@ -341,7 +360,8 @@ LSNumber* array_size(const LSArray* array) {
 	return LSNumber::get(array->values.size());
 }
 
-LSArray* array_sort(const LSArray* array, const LSNumber* order) {
+LSArray* array_sort(const LSArray*, const LSNumber*) {
+	// TODO
 	return new LSArray();
 }
 
@@ -357,6 +377,7 @@ LSValue* array_sum(const LSArray* array) {
 	return LSNumber::get(sum);
 }
 
-LSValue* array_unshift(const LSArray* array, const LSValue* value) {
+LSValue* array_unshift(const LSArray*, const LSValue*) {
+	// TODO
 	return new LSArray();
 }

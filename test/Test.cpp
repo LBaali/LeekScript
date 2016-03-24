@@ -251,8 +251,8 @@ void Test::tests() {
 	test("let s = 0 for let i = 0; i < 10; i += 2 do s += i end s", "20");
 	test("let i = 0 for i = 0; i < 10; i++ { } i", "10");
 	test("let i = 0 for i = 0; i < 10; i++ { if i == 5 { break } } i", "5");
-	test("let a = 0 for i = 0; i < 10; i++ { a++ } a", "10");
-	test("let a = 0 for i = 0; i < 10; i++ { if i < 5 { continue } a++ } a", "5");
+	test("let a = 0 for let i = 0; i < 10; i++ { a++ } a", "10");
+	test("let a = 0 for let i = 0; i < 10; i++ { if i < 5 { continue } a++ } a", "5");
 
 	/*
 	 * Foreach loops
@@ -260,6 +260,7 @@ void Test::tests() {
 	header("Foreach loops");
 	test("let s = 0 for v in [1, 2, 3, 4] { s += v } s", "10");
 	test("let s = '' for v in ['salut ', 'ça ', 'va ?'] { s += v } s", "'salut ça va ?'");
+	test("let s = 0 for k : v in [1, 2, 3, 4] { s += k * v } s", "18");
 
 	/*
 	 * Array operations
@@ -315,12 +316,16 @@ void Test::tests() {
 	 */
 	header("Function operators");
 	test("+(1, 2)", "3");
+	test("+([1], 2)", "[1, 2]");
+	test("+('test', 2)", "'test2'");
 //	test("-(9, 2)", "7");
 	test("*(5, 8)", "40");
+	test("*('test', 2)", "'testtest'");
 	test("/(48, 12)", "4");
 	test("^(2, 11)", "2048");
 	test("%(48, 5)", "3");
 	test("let p = + p(1, 2)", "3");
+	test("let p = + p('test', 2)", "'test2'");
 	//test("let p = -\n p(9, 2)", "7");
 	test("let p = * p(5, 8)", "40");
 	test("let p = / p(48, 12)", "4");
@@ -378,8 +383,8 @@ void Test::tests() {
 	test("String.split('salut', '')", "['s', 'a', 'l', 'u', 't']");
 	test("String.startsWith('salut ça va', 'salut')", "true");
 	test("String.toArray('salut')", "['s', 'a', 'l', 'u', 't']");
-	test("Array.average([1, 2, 3, 4, 5, 6])", "3.5");
-	test("Array.average([])", "0");
+	test("String.charAt('salut', 1)", "'a'");
+	test("'salut'.substring(3, 4)", "'ut'");
 
 	header("Array standard library");
 	test("Array", "<class Array>");
@@ -388,6 +393,8 @@ void Test::tests() {
 	test("new Array()", "[]");
 	test("Array.size([1, 'yo', true])", "3");
 	test("[1, 'yo', true].size()", "3");
+	test("Array.average([1, 2, 3, 4, 5, 6])", "3.5");
+	test("Array.average([])", "0");
 	test("Array.map([1, 2, 3], x -> x ^ 2)", "[1, 4, 9]");
 	test("[3, 4, 5].map(x -> x ^ 2)", "[9, 16, 25]");
 	test("Array.map2([1, 'yo ', []], [12, 55, 9], (x, y -> x + y))", "[13, 'yo 55', [9]]");
@@ -406,6 +413,10 @@ void Test::tests() {
 	test("['yo', 3, 4, 5].first()", "'yo'");
 	test("Array.last([1, 2, 3, 10, true, 'yo', null])", "null");
 	test("['yo', 3, 4, 5].last()", "5");
+
+	// TODO : the return type of first() must be the element type of the array if it's homogeneous
+//	test("[[321, 21], [23, 212], [654, 9876]].first().last()", "21");
+
 	test("Array.foldLeft([1, 2, 3, 10, true, 'yo', null], (x, y -> x + y), 'concat:')", "'concat:12310trueyonull'");
 	test("Array.foldRight([1, 2, 3, 10, true, 'yo', null], (x, y -> x + y), 'concat:')", "16");
 //	test("Array.shuffle([1, 2, 3, 10, true, 'yo', null])", "test shuffle ?");
@@ -449,10 +460,22 @@ void Test::tests() {
 	test("let a = [1, 2, 3] a.removeElement(1)", "[1: 2, 2: 3]");
 	test("let a = [1, 2, 3] a.removeElement('key')", "[1, 2, 3]");
 
+	/*
+	 * Standard library general
+	 */
+	header("Standard library general");
+	test("let my_map = [].map; my_map([1, 2, 3], x -> x ^ 2)", "[1, 4, 9]");
+	test("[].map == [].map", "true");
+	test("{}.map == {}.map", "true");
+	test("[].map == {}.map", "false");
+	test("let a = [].map; a == [].map", "true");
 
+	/*
+	 * Other stuff
+	 */
 	header("Other");
-
 	test("var f = obj -> obj.a [f(12), f({a: 'yo'})]", "[null, 'yo']");
+
 /*
 	test("3 ~ x -> x ^ x", "27");
 	test("[1, 2, 3] ~ x -> x + 4", "[1, 2, 3, 4]");
@@ -502,75 +525,18 @@ void Test::header(string text) {
 	cout << "----------------" << endl;
 }
 
-extern map<string, jit_value_t> internals;
-extern map<string, jit_value_t> globals;
-extern map<string, jit_value_t> locals;
-
-void Test::test(string code, string result) {
+void Test::test(string code, string expected) {
 
 	total++;
 
-	LexicalAnalyser lex;
-	vector<Token> tokens = lex.analyse(code);
+	string res = vm.execute(code, "{}", ExecMode::TEST);
 
-	SyntaxicAnalyser syn;
-	Program* program = syn.analyse(tokens);
-
-	if (syn.getErrors().size() > 0) {
-		for (SyntaxicalError* error : syn.getErrors()) {
-			cout << error->message << endl;
-		}
+	if (res != expected) {
+		cout << "FAUX : " << code << "  =/=>  " << expected << "  got  " << res << endl;
 	} else {
-
-		Context context { "{}" };
-		Compiler c;
-
-		try {
-			SemanticAnalyser sem;
-			sem.analyse(program, &context);
-		} catch (SemanticError& e) {
-			cout << e.message << endl;
-			return;
-		}
-
-		internals.clear();
-		globals.clear();
-		locals.clear();
-
-		jit_init();
-		jit_context_t jit_context = jit_context_create();
-		jit_context_build_start(jit_context);
-
-		// Create function signature and object. int (*)(int)
-		jit_type_t params[0] = {};
-		jit_type_t signature = jit_type_create_signature(jit_abi_cdecl, JIT_POINTER, params, 0, 1);
-		jit_function_t F = jit_function_create(jit_context, signature);
-
-		program->compile_jit(c, F, context, false);
-
-		jit_function_compile(F);
-		jit_context_build_end(jit_context);
-
-		typedef LSValue* (*FF)();
-		FF fun = (FF) jit_function_to_closure(F);
-
-		clock_t begin = clock();
-		LSValue* res = fun();
-		exeTime += (clock() - begin);
-
-		ostringstream oss;
-		res->print(oss);
-		string r = oss.str();
-
-		if (result != r) {
-			cout << "FAUX : " << code << "  =/=>  " << result << "  got  " << r << endl;
-		} else {
-			cout << "OK   : " << code << "  ===>  " << result << endl;
-			success++;
-		}
+		cout << "OK   : " << code << "  ===>  " << expected << endl;
+		success++;
 	}
 }
 
-Test::~Test() {
-
-}
+Test::~Test() {}

@@ -85,7 +85,7 @@ void Expression::print(ostream& os) const {
 	os <<  "}";
 }
 
-void Expression::analyse(SemanticAnalyser* analyser, const Type req_info) {
+void Expression::analyse(SemanticAnalyser* analyser, const Type) {
 
 	type = Type::VALUE;
 	constant = true;
@@ -458,9 +458,6 @@ jit_value_t Expression::compile_jit(Compiler& c, jit_function_t& F, Type req_typ
 			break;
 		}
 		case TokenType::POWER: {
-			if (req_type.nature == Nature::POINTER) {
-				use_jit_func = false;
-			}
 			jit_func = &jit_insn_pow;
 			ls_func = (void*) &jit_pow;
 			break;
